@@ -1139,7 +1139,7 @@ void APP_TimeSlice10ms(void)
 		return;
 #endif
 
-#ifdef ENABLE_FLASHLIGHT
+#if defined(ENABLE_FLASHLIGHT) && !defined(ENABLE_FLASHLIGHT_MOD)
 	FlashlightTimeSlice();
 #endif
 

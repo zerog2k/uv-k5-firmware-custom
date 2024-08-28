@@ -57,6 +57,9 @@
 		FLASH_Init(FLASH_READ_MODE_2_CYCLE);
 	}
 #endif
+#ifdef ENABLE_FLASHLIGHT_MOD
+#include "app/flashlight.h"
+#endif
 
 void BOARD_GPIO_Init(void)
 {
@@ -497,6 +500,9 @@ void BOARD_Init(void)
 #ifdef ENABLE_FMRADIO
 	BK1080_Init0();
 #endif
+#ifdef ENABLE_FLASHLIGHT_MOD
+	FLASHLIGHT_InitHardware();
+#endif	
 
 #if defined(ENABLE_UART) || defined(ENABLED_AIRCOPY)
 	CRC_Init();

@@ -2,10 +2,14 @@
 
 #include "driver/gpio.h"
 #include "bsp/dp32g030/gpio.h"
+#include "bsp/dp32g030/pwmplus.h"
+#include "bsp/dp32g030/portcon.h"
 
 #include "flashlight.h"
 
 enum FlashlightMode_t  gFlashLightState;
+
+#ifndef ENABLE_FLASHLIGHT_MOD
 
 void FlashlightTimeSlice()
 {
@@ -63,4 +67,67 @@ void ACTION_FlashLight(void)
 	}
 }
 
+#else // ENABLE_FLASHLIGHT_MOD
+
+void FLASHLIGHT_InitHardware()
+{
+	// Setup PWM on Flashlight pin
+	// 48MHz / 94 / 1024 ~ 500Hz
+	const uint32_t PWM_FREQUENCY_HZ =  1000;
+	PWM_PLUS1_CLKSRC |= ((48000000 / 1024 / PWM_FREQUENCY_HZ) << 16);
+	PWM_PLUS1_PERIOD = 1023;
+
+	PORTCON_PORTC_SEL0 &= ~(0
+		// Flashlight
+		| PORTCON_PORTC_SEL0_C3_MASK
+		);
+	PORTCON_PORTC_SEL0 |= 0
+		// Flashlight PWM
+		| PORTCON_PORTC_SEL0_C3_BITS_PWMP1_CH1N
+		;
+
+	PWM_PLUS1_GEN = 	
+		PWMPLUS_GEN_CH1N_OE_BITS_ENABLE |
+		//PWMPLUS_GEN_CH1N_OUTINV_BITS_ENABLE |
+		0;
+
+	PWM_PLUS1_CFG =  	
+		PWMPLUS_CFG_CNT_REP_BITS_ENABLE |
+		PWMPLUS_CFG_COUNTER_EN_BITS_ENABLE |
+		0;
+}
+
+
+void ACTION_FlashLight(void)
+{
+	// cycle through flashlight duty cycles
+	switch (gFlashLightState) {
+		case FLASHLIGHT_OFF:
+			gFlashLightState++; // next state
+			FLASHLIGHT_SetBrightness(0);
+			break;
+		case FLASHLIGHT_LOW:
+			gFlashLightState++; // next state
+			FLASHLIGHT_SetBrightness(3);
+			break;
+		case FLASHLIGHT_MED:
+			gFlashLightState++; // next state
+			FLASHLIGHT_SetBrightness(6);
+			break;
+		case FLASHLIGHT_HI:
+		default:
+			gFlashLightState = FLASHLIGHT_OFF; // next state
+			FLASHLIGHT_SetBrightness(10);
+			break;		
+	}
+}
+
+void FLASHLIGHT_SetBrightness(uint8_t brightness)
+{
+	PWM_PLUS1_CH1_COMP = (1 << brightness) - 1;
+	//PWM_PLUS1_SWLOAD = 1;
+}
 #endif
+
+#endif
+
