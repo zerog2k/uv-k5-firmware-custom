@@ -108,23 +108,23 @@ void ACTION_FlashLight(void)
 			break;
 		case FLASHLIGHT_LOW:
 			gFlashLightState++; // next state
-			FLASHLIGHT_SetBrightness(3);
+			FLASHLIGHT_SetBrightness(5);
 			break;
 		case FLASHLIGHT_MED:
 			gFlashLightState++; // next state
-			FLASHLIGHT_SetBrightness(6);
+			FLASHLIGHT_SetBrightness(8);
 			break;
 		case FLASHLIGHT_HI:
 		default:
 			gFlashLightState = FLASHLIGHT_OFF; // next state
-			FLASHLIGHT_SetBrightness(10);
+			FLASHLIGHT_SetBrightness(16);
 			break;		
 	}
 }
 
 void FLASHLIGHT_SetBrightness(uint8_t brightness)
 {
-	PWM_PLUS1_CH1_COMP = (1 << brightness) - 1;
+	PWM_PLUS1_CH1_COMP = (1 << brightness) - 1; // 16 bits
 	//PWM_PLUS1_SWLOAD = 1;
 }
 #endif
